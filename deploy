@@ -179,13 +179,13 @@ setup() {
   local path=`config_get path`
   local repo=`config_get repo`
   hook pre-setup || abort pre-setup hook failed
-  run "mkdir -p $path/{shared/{logs,pids},source}"
+  run "mkdir -p $path/{shared/{logs,pids},src}"
   test $? -eq 0 || abort setup paths failed
   log running setup
   log cloning $repo
-  run "git clone $repo $path/source"
+  run "git clone $repo $path/src"
   test $? -eq 0 || abort failed to clone
-  run "ln -sfn $path/source $path/current"
+  run "ln -sfn $path/src $path/current"
   test $? -eq 0 || abort symlink failed
   hook post-setup || abort post-setup hook failed
   log setup complete
@@ -208,15 +208,15 @@ deploy() {
 
   hook pre-deploy || abort pre-deploy hook failed
 
-  # fetch source
+  # fetch src
   log fetching updates
-  run "cd $path/source && git fetch --all --tags"
+  run "cd $path/src && git fetch --all --tags"
   test $? -eq 0 || abort fetch failed
 
   # latest tag
   if test -z "$ref"; then
     log fetching latest tag
-    ref=`run "cd $path/source && git for-each-ref refs/tags \
+    ref=`run "cd $path/src && git for-each-ref refs/tags \
       --sort=-*authordate \
       --format='%(refname)' \
       --count=1 | cut -d '/' -f 3"`
@@ -225,15 +225,15 @@ deploy() {
 
   # reset HEAD
   log resetting HEAD to $ref
-  run "cd $path/source && git reset --hard $ref"
+  run "cd $path/src && git reset --hard $ref"
   test $? -eq 0 || abort git reset failed
 
   # link current
-  run "ln -sfn $path/source $path/current"
+  run "ln -sfn $path/src $path/current"
   test $? -eq 0 || abort symlink failed
 
   # deploy log
-  run "cd $path/source && \
+  run "cd $path/src && \
       echo \`git rev-parse --short HEAD\` \
       >> $path/.deploys"
   test $? -eq 0 || abort deploy log append failed
@@ -260,7 +260,7 @@ deploy() {
 
 current_commit() {
   local path=`config_get path`
-  run "cd $path/source && \
+  run "cd $path/src && \
       git rev-parse --short HEAD"
 }
 
